@@ -1,4 +1,4 @@
-# Logical Structure — GSD Procurement Integrity Platform
+# Logical Structure — MCP Sentinel (GSD Procurement Integrity Platform)
 
 ## 1. System ecosystem
 

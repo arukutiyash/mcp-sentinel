@@ -1,4 +1,4 @@
-# Business Statement — GSD Procurement Integrity Platform
+# Business Statement — MCP Sentinel (GSD Procurement Integrity Platform)
 
 ## The problem
 

@@ -1,4 +1,4 @@
-# Technical Implementation Guide — GSD Procurement Integrity Platform
+# Technical Implementation Guide — MCP Sentinel (GSD Procurement Integrity Platform)
 
 This document is written to be sufficient, on its own, for an AI coding
 agent to regenerate a functionally equivalent application: exact schema,

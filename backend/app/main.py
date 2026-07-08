@@ -10,7 +10,7 @@ from .routers import (
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="GSD Procurement Integrity Platform",
+    title="MCP Sentinel — GSD Procurement Integrity Platform",
     description="Receiving verification, dual-approval prepayments, and an "
                  "immutable audit trail for City of LA General Services "
                  "Department purchase orders.",

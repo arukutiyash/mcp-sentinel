@@ -22,7 +22,7 @@ from mcp.server.fastmcp import FastMCP
 from app.database import SessionLocal
 from app import models, analytics
 
-mcp = FastMCP("gsd-procurement-integrity")
+mcp = FastMCP("mcp-sentinel")
 
 
 def _po_summary(po: models.PurchaseOrder) -> dict:

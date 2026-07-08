@@ -1,4 +1,5 @@
-# GSD Procurement Integrity Platform
+# MCP Sentinel
+### GSD Procurement Integrity Platform — City of Los Angeles, Department of General Services
 
 A purchase-order and payment workflow application built for the City of
 Los Angeles Department of General Services (DGS/GSD) internship sample
