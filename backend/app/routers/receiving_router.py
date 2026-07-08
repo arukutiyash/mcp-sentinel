@@ -25,6 +25,25 @@ def record_receiving(
         raise HTTPException(status_code=404, detail="Line item not found")
     if not payload.serial_or_asset_tag.strip() or not payload.evidence_note.strip():
         raise HTTPException(status_code=400, detail="Serial/asset tag and evidence note are required")
+    if payload.quantity_received <= 0:
+        raise HTTPException(status_code=400, detail="quantity_received must be greater than zero")
+
+    # Guard against over-receiving -- whether from an accidental duplicate
+    # submission (e.g. a double click) or someone deliberately padding a
+    # receiving record. A line item can never accumulate more received
+    # quantity than was ordered; that mismatch is exactly the kind of
+    # signal analytics.vendor_risk() looks for, so it must never be
+    # silently allowed to occur in the first place.
+    already_received = sum(r.quantity_received for r in line_item.receiving_records)
+    remaining = line_item.quantity_ordered - already_received
+    if payload.quantity_received > remaining:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot receive {payload.quantity_received} units: only {remaining} "
+                   f"of {line_item.quantity_ordered} ordered remain unreceived "
+                   f"({already_received} already recorded). If this delivery was logged "
+                   "in error, do not resubmit -- flag it to an auditor instead.",
+        )
 
     record = models.ReceivingRecord(
         line_item_id=line_item.id,
