@@ -121,19 +121,31 @@ suggested in the UI.
 
 1. Look up the line item; 404 if not found.
 2. Reject with HTTP 400 if `serial_or_asset_tag` or `evidence_note` is
-   blank after stripping whitespace — this is the direct fix for the
-   real incident where undelivered goods were marked received with no
-   corroborating evidence.
-3. Insert a ReceivingRecord attributed to the authenticated clerk
+   blank after stripping whitespace, or if `quantity_received` is not
+   greater than zero — this is the direct fix for the real incident
+   where undelivered goods were marked received with no corroborating
+   evidence.
+3. **Guard against over-receiving.** Sum `quantity_received` across all
+   existing ReceivingRecord rows already on this line item to get
+   `already_received`. Compute `remaining = quantity_ordered -
+   already_received`. If the incoming `quantity_received` exceeds
+   `remaining`, reject with HTTP 400 (message should explain how many
+   units actually remain outstanding and instruct the caller not to
+   simply resubmit, but to flag the discrepancy to an auditor instead).
+   This closes off both an accidental duplicate submission (e.g. a
+   double-click on "Record receiving") and a deliberate attempt to
+   over-report delivered quantity — a line item's recorded received
+   quantity must never be allowed to exceed what was actually ordered.
+4. Insert a ReceivingRecord attributed to the authenticated clerk
    (`received_by_user_id = current_user.id`), never to a passed-in or
    default identity.
-4. Recompute the parent PO's status: for every line item on the PO, sum
+5. Recompute the parent PO's status: for every line item on the PO, sum
    `quantity_received` across all of its receiving records. If every
    line item's summed received quantity is `>=` its `quantity_ordered`,
    set PO status to `RECEIVED`. Otherwise, if at least one unit across
    any line item has been received, set status to `PARTIALLY_RECEIVED`.
    Otherwise leave status unchanged.
-5. Write an audit log entry: action `RECORD_RECEIVING`, entity_type
+6. Write an audit log entry: action `RECORD_RECEIVING`, entity_type
    `LineItem`, detail includes quantity_received, serial_or_asset_tag,
    po_id.
 
@@ -146,7 +158,7 @@ suggested in the UI.
    *not* blocked outright — legitimate prepayments happen — it is routed
    through mandatory documentation and (see 3.4) dual approval instead.
 3. If `is_prepayment` is false: require every line item on the PO to be
-   fully received (same check as 3.2 step 4); HTTP 400 otherwise,
+   fully received (same check as 3.2 step 5); HTTP 400 otherwise,
    pointing the caller at the prepayment path.
 4. Insert the PaymentRequest with status `PENDING`.
 5. Audit log: action `REQUEST_PAYMENT`.
